@@ -1,0 +1,261 @@
+<!-- Student: Ekaterina Inchakova | ID: 25028334 | Module: UFCFES-30-1 -->
+{% extends "base.html" %}
+{% block title %}{{ event.EventName }} | BCE{% endblock %}
+
+{% block content %}
+<div class="event-detail-grid">
+
+    
+    <div class="event-main-card">
+        {% if event.ImageURL %}
+            <img src="{{ url_for('static', filename='images/' + event.ImageURL) }}"
+                 alt="{{ event.EventName }}" class="event-detail-img">
+        {% endif %}
+        <div class="event-main-body">
+            <span class="event-category-tag">{{ event.CategoryName }}</span>
+            <h2>{{ event.EventName }}</h2>
+            <p class="event-desc-full">{{ event.Description }}</p>
+
+            <div class="event-info-grid">
+                <div class="event-info-item">
+                    <div class="label">Venue</div>
+                    <div class="value">{{ event.VenueName }}</div>
+                </div>
+                <div class="event-info-item">
+                    <div class="label">Start date</div>
+                    <div class="value">{{ event.StartDate }}</div>
+                </div>
+                <div class="event-info-item">
+                    <div class="label">End date</div>
+                    <div class="value">{{ event.EndDate }}</div>
+                </div>
+                <div class="event-info-item">
+                    <div class="label">Booking deadline</div>
+                    <div class="value">{{ event.BookingDeadline }}</div>
+                </div>
+                <div class="event-info-item">
+                    <div class="label">Total capacity</div>
+                    <div class="value">{{ event.MaxTickets }}</div>
+                </div>
+                <div class="event-info-item">
+                    <div class="label">Tickets remaining</div>
+                    <div class="value
+                        {% if remaining_tickets == 0 %}sold-out
+                        {% elif remaining_tickets <= 10 %}low-stock{% endif %}">
+                        {% if remaining_tickets == 0 %}Sold out
+                        {% else %}{{ remaining_tickets }}{% endif %}
+                    </div>
+                </div>
+            </div>
+
+            
+            <div class="event-price-panel">
+                {% if event.IsFree %}
+                    <div class="price-big free">Free</div>
+                    <div class="price-label">No charge &mdash; booking required</div>
+                {% else %}
+                    <div class="price-big">&pound;{{ "%.2f"|format(event.BasePrice) }}</div>
+                    <div class="price-label">base price per ticket</div>
+                {% endif %}
+            </div>
+
+            {% if discount_preview %}
+            <div class="discount-note">{{ discount_preview }}</div>
+            {% endif %}
+
+            
+            {% if event_days %}
+            <div class="event-days-table">
+                <h4>Event Schedule</h4>
+                <div class="table-wrapper">
+                    <table class="styled-table">
+                        <thead>
+                            <tr><th>Date</th><th>Day price</th></tr>
+                        </thead>
+                        <tbody>
+                        {% for day in event_days %}
+                            <tr>
+                                <td>{{ day.EventDate }}</td>
+                                <td>{% if day.DayPrice == 0 %}Free{% else %}&pound;{{ "%.2f"|format(day.DayPrice) }}{% endif %}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    
+    <aside class="booking-sidebar">
+        {% if session.get('user_id') %}
+            {% if remaining_tickets > 0 %}
+                <h3>Book this event</h3>
+
+                {% if days_in_advance >= 15 and not event.IsFree %}
+                <div class="info-note">
+                    <strong>Advance booking discount applies today:</strong><br>
+                    {% if days_in_advance >= 50 %}20% off (50&ndash;60 days advance)
+                    {% elif days_in_advance >= 35 %}15% off (35&ndash;50 days advance)
+                    {% elif days_in_advance >= 25 %}10% off (25&ndash;35 days advance)
+                    {% elif days_in_advance >= 15 %}5% off (15&ndash;25 days advance)
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                
+                {% if event_days %}
+                <form method="POST" action="{{ url_for('book_event_days', event_id=event.EventID) }}" id="bookingForm">
+                    <div class="form-group">
+                        <label>Select days to attend</label>
+                        <div class="days-selector">
+                            {% for day in event_days %}
+                            <label class="day-check-row" id="row-{{ loop.index }}">
+                                <input type="checkbox" name="selected_days" value="{{ day.EventDate }}"
+                                       data-price="{{ day.DayPrice }}"
+                                       onchange="updateTotal()">
+                                <span class="day-check-label">{{ day.EventDate }}</span>
+                                <span class="day-price-tag">
+                                    {% if day.DayPrice == 0 %}Free{% else %}&pound;{{ "%.2f"|format(day.DayPrice) }}{% endif %}
+                                </span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="booking-total-preview" id="totalPreview">Select days to see total</div>
+
+                    {% if session.get('is_student') %}
+                    <p class="form-help" style="margin-bottom:0.75rem;">
+                        Student discount (10%) will be applied. Bring your student ID to the event.
+                    </p>
+                    {% endif %}
+
+                    <button type="submit" class="btn btn-primary btn-full btn-lg">Confirm booking</button>
+                </form>
+
+                {% else %}
+                
+                <form method="POST" action="{{ url_for('book_event', event_id=event.EventID) }}"
+                      id="bookingForm"
+                      data-base-price="{% if event.IsFree %}0{% else %}{{ event.BasePrice }}{% endif %}">
+                    <div class="form-group">
+                        <label for="num_tickets">Number of tickets</label>
+                        <input type="number" id="num_tickets" name="number_of_tickets"
+                               min="1" max="{{ remaining_tickets }}" value="1" required>
+                    </div>
+                    <div class="booking-total-preview" id="totalPreview" style="display:none;"></div>
+
+                    {% if session.get('is_student') %}
+                    <p class="form-help" style="margin-bottom:0.75rem;">
+                        Student discount (10%) will be applied. Bring your student ID to the event.
+                    </p>
+                    {% endif %}
+
+                    <button type="submit" class="btn btn-primary btn-full btn-lg">Confirm booking</button>
+                </form>
+                {% endif %}
+
+            {% else %}
+                
+                <h3>Book this event</h3>
+                <div class="sold-out-note">This event is fully booked.</div>
+
+                {% if on_waiting_list %}
+                    <div class="info-note" style="margin-top:1rem;">
+                        You are on the waiting list. We will notify you if a place becomes available.
+                    </div>
+                {% else %}
+                    <form method="POST"
+                          action="{{ url_for('join_waiting_list', event_id=event.EventID) }}"
+                          style="margin-top:1rem;">
+                        <button type="submit" class="btn btn-warning btn-full">Join waiting list</button>
+                    </form>
+                {% endif %}
+            {% endif %}
+
+        {% else %}
+            
+            <div class="login-prompt-box">
+                <p>Please <a href="{{ url_for('login') }}">log in</a> to book tickets.</p>
+                <p>No account? <a href="{{ url_for('register') }}">Register here</a></p>
+            </div>
+        {% endif %}
+    </aside>
+</div>
+
+<script>
+// Standard booking price preview
+const form = document.getElementById('bookingForm');
+const preview = document.getElementById('totalPreview');
+const numInput = document.getElementById('num_tickets');
+if (form && numInput && preview) {
+    const base = parseFloat(form.dataset.basePrice) || 0;
+    function updateStd() {
+        const qty = parseInt(numInput.value) || 0;
+        if (qty > 0) {
+            if (base === 0) {
+                preview.textContent = 'This event is free';
+            } else {
+                preview.textContent = 'Estimated base total: \u00A3' + (qty * base).toFixed(2) + ' (discounts at checkout)';
+            }
+            preview.style.display = 'block';
+        } else {
+            preview.style.display = 'none';
+        }
+    }
+    numInput.addEventListener('input', updateStd);
+    updateStd();
+}
+
+// Multi-day total
+function updateTotal() {
+    const boxes = document.querySelectorAll('input[name="selected_days"]');
+    let total = 0, count = 0;
+    boxes.forEach(function(cb) {
+        const row = cb.closest('.day-check-row');
+        if (cb.checked) {
+            total += parseFloat(cb.dataset.price) || 0;
+            count++;
+            if (row) row.classList.add('checked');
+        } else {
+            if (row) row.classList.remove('checked');
+        }
+    });
+    const p = document.getElementById('totalPreview');
+    if (p) {
+        if (count === 0) {
+            p.textContent = 'Select days to see total';
+        } else {
+            p.textContent = count + ' day(s) selected — base total: \u00A3' + total.toFixed(2) + ' (discounts at checkout)';
+        }
+    }
+}
+</script>
+<style>
+.days-selector { display: flex; flex-direction: column; gap: 0.5rem; }
+.day-check-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    box-sizing: border-box;
+}
+.day-check-row input[type="checkbox"] { flex-shrink: 0; }
+.day-check-label { font-size: 0.95rem; overflow: visible; white-space: nowrap; }
+.day-price-tag {
+    font-weight: 600;
+    color: #2563eb;
+    white-space: nowrap;
+    text-align: right;
+}
+.day-check-row.checked { background: #eff6ff; border-color: #2563eb; }
+.booking-sidebar { min-width: 0; overflow: visible; }
+</style>
+{% endblock %}

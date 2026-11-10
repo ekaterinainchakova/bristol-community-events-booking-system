@@ -1,0 +1,85 @@
+<!-- Student: Ekaterina Inchakova | ID: 25028334 | Module: UFCFES-30-1 -->
+{% extends "base.html" %}
+{% block title %}Add Event | BCE Admin{% endblock %}
+{% block content %}
+
+<div class="admin-page-header">
+    <h2>Add New Event</h2>
+    <a href="{{ url_for('admin_events') }}" class="btn btn-secondary">Back to events</a>
+</div>
+
+<div class="form-page">
+<div class="form-page-card">
+    <form method="POST" enctype="multipart/form-data">
+
+        <div class="form-group">
+            <label for="event_name">Event name <span class="required">*</span></label>
+            <input type="text" id="event_name" name="event_name" required maxlength="200" placeholder="e.g. Bristol Summer Exhibition">
+        </div>
+
+        <div class="form-group">
+            <label for="description">Description <span class="required">*</span></label>
+            <textarea id="description" name="description" rows="4" required placeholder="Describe the event..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="vec_id">Venue &amp; Category <span class="required">*</span></label>
+            <select id="vec_id" name="vec_id" required>
+                <option value="">Select venue / category...</option>
+                {% for opt in venue_category_options %}
+                <option value="{{ opt.VenuesEventCategoriesID }}">
+                    {{ opt.VenueName }} — {{ opt.CategoryName }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="start_date">Start date <span class="required">*</span></label>
+                <input type="date" id="start_date" name="start_date" required>
+            </div>
+            <div class="form-group">
+                <label for="end_date">End date <span class="required">*</span></label>
+                <input type="date" id="end_date" name="end_date" required>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="booking_deadline">Booking deadline <span class="required">*</span></label>
+                <input type="date" id="booking_deadline" name="booking_deadline" required>
+            </div>
+            <div class="form-group">
+                <label for="max_tickets">Max tickets <span class="required">*</span></label>
+                <input type="number" id="max_tickets" name="max_tickets" min="1" required placeholder="e.g. 100">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="base_price">Base price (&pound;)</label>
+                <input type="number" id="base_price" name="base_price" min="0" step="0.01" placeholder="0.00">
+            </div>
+            <div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:0.25rem;">
+                <div class="form-check">
+                    <input type="checkbox" id="is_free" name="is_free" onchange="document.getElementById('base_price').disabled=this.checked;">
+                    <label for="is_free">Free event (no charge)</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="event_image">Event image (optional)</label>
+            <input type="file" id="event_image" name="event_image" accept=".jpg,.jpeg,.png,.gif,.webp,.avif">
+            <p class="form-help">Max 5 MB. Accepted: JPG, PNG, GIF, WebP, AVIF</p>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Save event</button>
+            <a href="{{ url_for('admin_events') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+</div>
+{% endblock %}

@@ -1,0 +1,51 @@
+<!-- Student: Ekaterina Inchakova | ID: 25028334 | Module: UFCFES-30-1 -->
+{% extends "base.html" %}
+{% block title %}Admin Dashboard | BCE{% endblock %}
+{% block content %}
+
+<div class="admin-page-header">
+    <h2>Admin Dashboard</h2>
+</div>
+
+<div class="admin-nav-tabs">
+    <a href="{{ url_for('admin_dashboard') }}" class="active">Dashboard</a>
+    <a href="{{ url_for('admin_events') }}">Events</a>
+    <a href="{{ url_for('admin_bookings') }}">Bookings</a>
+    <a href="{{ url_for('admin_users') }}">Users</a>
+    <a href="{{ url_for('admin_venues') }}">Venues</a>
+    <a href="{{ url_for('admin_reports') }}">Reports</a>
+    <a href="{{ url_for('admin_messages') }}">Messages
+        {% if unread_messages_count > 0 %}
+        <span class="badge badge-red" style="margin-left:0.3rem;">{{ unread_messages_count }}</span>
+        {% endif %}
+    </a>
+</div>
+
+<div class="stats-row">
+    <div class="stat-card">
+        <div class="stat-label">Total events</div>
+        <div class="stat-value">{{ total_events }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Total bookings</div>
+        <div class="stat-value">{{ total_bookings }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Registered users</div>
+        <div class="stat-value">{{ total_users }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Total revenue</div>
+        <div class="stat-value">&pound;{{ "%.0f"|format(total_revenue) }}</div>
+    </div>
+</div>
+
+<div class="card">
+    <h3>Quick links</h3>
+    <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-top:0.5rem;">
+        <a href="{{ url_for('admin_add_event') }}" class="btn btn-primary">Add new event</a>
+        <a href="{{ url_for('admin_reports') }}" class="btn btn-secondary">View reports</a>
+        <a href="{{ url_for('admin_messages') }}" class="btn btn-secondary">Inbox</a>
+    </div>
+</div>
+{% endblock %}

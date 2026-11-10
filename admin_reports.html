@@ -1,0 +1,119 @@
+<!-- Student: Ekaterina Inchakova | ID: 25028334 | Module: UFCFES-30-1 -->
+{% extends "base.html" %}
+{% block title %}Admin – Reports | BCE{% endblock %}
+{% block content %}
+
+<div class="admin-page-header"><h2>Reports</h2></div>
+
+<div class="admin-nav-tabs">
+    <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+    <a href="{{ url_for('admin_events') }}">Events</a>
+    <a href="{{ url_for('admin_bookings') }}">Bookings</a>
+    <a href="{{ url_for('admin_users') }}">Users</a>
+    <a href="{{ url_for('admin_venues') }}">Venues</a>
+    <a href="{{ url_for('admin_reports') }}" class="active">Reports</a>
+    <a href="{{ url_for('admin_messages') }}">Messages</a>
+</div>
+
+{% if low_booking_events %}
+<div class="report-block" style="border-left:4px solid var(--red);">
+    <h3>Low booking alert &mdash; events within 10 days with under 50% sold</h3>
+    <div class="table-wrapper">
+    <table class="styled-table">
+        <thead><tr><th>Event</th><th>Date</th><th>Days left</th><th>Sold</th><th>Capacity</th><th>%</th><th>Current price</th><th>Action</th></tr></thead>
+        <tbody>
+        {% for ev in low_booking_events %}
+        <tr>
+            <td>{{ ev.EventName }}</td>
+            <td>{{ ev.StartDate }}</td>
+            <td>{{ ev.days_until_event }}</td>
+            <td>{{ ev.tickets_booked }}</td>
+            <td>{{ ev.MaxTickets }}</td>
+            <td>{{ ev.booking_pct }}%</td>
+            <td>&pound;{{ ev.BasePrice }}</td>
+            <td>
+                <form method="POST" action="{{ url_for('admin_reduce_price', event_id=ev.EventID) }}"
+                      onsubmit="return confirm('Reduce price by 25%?');">
+                    <button type="submit" class="btn btn-danger btn-sm">Reduce 25%</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+{% endif %}
+
+<div class="report-block">
+    <h3>Revenue per event</h3>
+    <div class="table-wrapper">
+    <table class="styled-table">
+        <thead><tr><th>Event</th><th>Total revenue</th></tr></thead>
+        <tbody>
+        {% for r in revenue_report %}
+        <tr>
+            <td>{{ r.EventName }}</td>
+            <td><strong>&pound;{{ "%.2f"|format(r.total_revenue) }}</strong></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+
+<div class="report-block">
+    <h3>Bookings per event</h3>
+    <div class="table-wrapper">
+    <table class="styled-table">
+        <thead><tr><th>Event</th><th>Bookings</th><th>Tickets sold</th></tr></thead>
+        <tbody>
+        {% for r in bookings_per_event %}
+        <tr>
+            <td>{{ r.EventName }}</td>
+            <td>{{ r.total_bookings }}</td>
+            <td>{{ r.total_tickets_sold }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+
+<div class="report-block">
+    <h3>Tickets available per event</h3>
+    <div class="table-wrapper">
+    <table class="styled-table">
+        <thead><tr><th>Event</th><th>Capacity</th><th>Booked</th><th>Remaining</th></tr></thead>
+        <tbody>
+        {% for r in tickets_left_report %}
+        <tr>
+            <td>{{ r.EventName }}</td>
+            <td>{{ r.MaxTickets }}</td>
+            <td>{{ r.tickets_booked }}</td>
+            <td>
+                <span class="badge {% if r.tickets_left == 0 %}badge-red{% elif r.tickets_left < 10 %}badge-amber{% else %}badge-green{% endif %}">
+                    {{ r.tickets_left }}
+                </span>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+
+<div class="report-block">
+    <h3>Upcoming events per venue</h3>
+    <div class="table-wrapper">
+    <table class="styled-table">
+        <thead><tr><th>Venue</th><th>Upcoming events</th></tr></thead>
+        <tbody>
+        {% for r in venue_upcoming %}
+        <tr><td>{{ r.VenueName }}</td><td>{{ r.upcoming_events }}</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+{% endblock %}

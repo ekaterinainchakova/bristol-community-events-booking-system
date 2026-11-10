@@ -1,0 +1,75 @@
+<!-- Student: Ekaterina Inchakova | ID: 25028334 | Module: UFCFES-30-1 -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}BCE{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<nav>
+    <a href="{{ url_for('home') }}" class="nav-brand">Bristol Community Events</a>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">&#9776;</button>
+    <div class="nav-links" id="navLinks">
+        <a href="{{ url_for('home') }}">Home</a>
+        <a href="{{ url_for('events') }}">Events</a>
+        <a href="{{ url_for('about') }}">About</a>
+        <a href="{{ url_for('contact') }}">Contact</a>
+
+        {% if session.get('user_id') %}
+            <a href="{{ url_for('my_bookings') }}">My Bookings</a>
+            <a href="{{ url_for('change_password') }}">Password</a>
+            {% if session.get('role_name') == 'Admin' %}
+                <a href="{{ url_for('admin_dashboard') }}" class="nav-admin">Admin Panel</a>
+            {% endif %}
+            <a href="{{ url_for('logout') }}" class="nav-logout">Log out</a>
+            <span class="nav-user">{{ session.get('full_name', '').split()[0] }}</span>
+        {% else %}
+            <a href="{{ url_for('login') }}">Log in</a>
+            <a href="{{ url_for('register') }}" class="nav-register">Register</a>
+        {% endif %}
+    </div>
+</nav>
+
+<main class="page-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-stack">
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+</main>
+
+<footer class="site-footer">
+    <p>&copy; 2026 Bristol Community Events &mdash; UFCFES-30-1 &mdash; Ekaterina Inchakova (25028334)</p>
+</footer>
+
+<script>
+    const toggle = document.getElementById('navToggle');
+    const links  = document.getElementById('navLinks');
+    if (toggle && links) {
+        toggle.addEventListener('click', function () {
+            links.classList.toggle('open');
+        });
+    }
+    // Auto-dismiss flash messages
+    setTimeout(function () {
+        document.querySelectorAll('.flash-message').forEach(function (el) {
+            el.style.transition = 'opacity 0.4s';
+            el.style.opacity = '0';
+            setTimeout(function () { el.remove(); }, 400);
+        });
+    }, 5000);
+</script>
+</body>
+</html>

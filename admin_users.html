@@ -1,0 +1,66 @@
+<!-- Student: Ekaterina Inchakova | ID: 25028334 | Module: UFCFES-30-1 -->
+{% extends "base.html" %}
+{% block title %}Admin – Users | BCE{% endblock %}
+{% block content %}
+
+<div class="admin-page-header"><h2>Users</h2></div>
+
+<div class="admin-nav-tabs">
+    <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+    <a href="{{ url_for('admin_events') }}">Events</a>
+    <a href="{{ url_for('admin_bookings') }}">Bookings</a>
+    <a href="{{ url_for('admin_users') }}" class="active">Users</a>
+    <a href="{{ url_for('admin_venues') }}">Venues</a>
+    <a href="{{ url_for('admin_reports') }}">Reports</a>
+    <a href="{{ url_for('admin_messages') }}">Messages</a>
+</div>
+
+<div class="table-wrapper">
+<table class="styled-table">
+    <thead>
+        <tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Student</th><th>Role</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+    {% for u in users %}
+    <tr>
+        <td>#{{ u.UserID }}</td>
+        <td><strong>{{ u.FullName }}</strong></td>
+        <td>{{ u.Email }}</td>
+        <td>{{ u.Phone or '—' }}</td>
+        <td>{% if u.IsStudent %}<span class="badge badge-blue">Yes</span>{% else %}No{% endif %}</td>
+        <td>
+            <span class="badge {% if u.RoleName == 'Admin' %}badge-amber{% else %}badge-gray{% endif %}">
+                {{ u.RoleName }}
+            </span>
+        </td>
+        <td>
+            <div style="display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center;">
+                <a href="{{ url_for('admin_edit_user', user_id=u.UserID) }}"
+                   class="btn btn-warning btn-sm">Edit</a>
+
+                
+                <form method="POST"
+                      action="{{ url_for('admin_reset_password', user_id=u.UserID) }}"
+                      onsubmit="return confirm('Reset password for {{ u.FullName }}?');"
+                      style="display:flex;gap:0.3rem;align-items:center;">
+                    <input type="password" name="new_password" placeholder="New password"
+                           minlength="6" required
+                           style="padding:0.35rem 0.6rem;border:1.5px solid var(--gray-200);border-radius:var(--r-md);font-size:0.82rem;width:120px;">
+                    <button type="submit" class="btn btn-secondary btn-sm">Reset pwd</button>
+                </form>
+
+                {% if u.UserID != session.get('user_id') %}
+                <form method="POST"
+                      action="{{ url_for('admin_delete_user', user_id=u.UserID) }}"
+                      onsubmit="return confirm('Delete {{ u.FullName }}? This cannot be undone.');">
+                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+                {% endif %}
+            </div>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}

@@ -1,0 +1,49 @@
+<!-- Student: Ekaterina Inchakova | ID: 25028334 | Module: UFCFES-30-1 -->
+{% extends "base.html" %}
+{% block title %}Admin – Bookings | BCE{% endblock %}
+{% block content %}
+
+<div class="admin-page-header"><h2>All Bookings</h2></div>
+
+<div class="admin-nav-tabs">
+    <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+    <a href="{{ url_for('admin_events') }}">Events</a>
+    <a href="{{ url_for('admin_bookings') }}" class="active">Bookings</a>
+    <a href="{{ url_for('admin_users') }}">Users</a>
+    <a href="{{ url_for('admin_venues') }}">Venues</a>
+    <a href="{{ url_for('admin_reports') }}">Reports</a>
+    <a href="{{ url_for('admin_messages') }}">Messages</a>
+</div>
+
+<div class="table-wrapper">
+<table class="styled-table">
+    <thead>
+        <tr><th>#</th><th>Customer</th><th>Event</th><th>Event date</th><th>Booked on</th><th>Tickets</th><th>Total</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+    {% for b in bookings %}
+    <tr>
+        <td>#{{ b.BookingID }}</td>
+        <td>
+            <strong>{{ b.FullName }}</strong><br>
+            <small style="color:var(--gray-400);">{{ b.Email }}</small>
+        </td>
+        <td>{{ b.EventName }}</td>
+        <td>{{ b.StartDate }}</td>
+        <td>{{ b.BookingDate }}</td>
+        <td>{{ b.NumberOfTickets }}</td>
+        <td>&pound;{{ b.FinalPrice }}</td>
+        <td>
+            <span class="badge
+                {% if b.StatusName == 'Confirmed' %}badge-green
+                {% elif b.StatusName in ['Cancelled','Refunded'] %}badge-red
+                {% else %}badge-amber{% endif %}">
+                {{ b.StatusName or 'Pending' }}
+            </span>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}

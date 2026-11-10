@@ -1,0 +1,52 @@
+<!-- Student: Ekaterina Inchakova | ID: 25028334 | Module: UFCFES-30-1 -->
+{% extends "base.html" %}
+{% block title %}My Bookings | BCE{% endblock %}
+
+{% block content %}
+<div class="bookings-page-header">
+    <h2>My Bookings</h2>
+    <span class="bookings-count">{{ bookings|length }} booking(s)</span>
+</div>
+
+{% if bookings %}
+<div class="bookings-list">
+    {% for b in bookings %}
+    <div class="booking-row {% if b.StatusName in ['Cancelled','Refunded'] %}cancelled{% endif %}">
+        <div class="booking-row-info">
+            <h3>{{ b.EventName }}</h3>
+            <div class="booking-row-meta">
+                <span>Booking #{{ b.BookingID }}</span>
+                <span>Event: {{ b.StartDate }}</span>
+                <span>Booked: {{ b.BookingDate }}</span>
+                <span>{{ b.NumberOfTickets }} ticket(s)</span>
+            </div>
+        </div>
+        <div class="booking-row-actions">
+            <span class="badge
+                {% if b.StatusName == 'Confirmed' %}badge-green
+                {% elif b.StatusName in ['Cancelled','Refunded'] %}badge-red
+                {% else %}badge-amber{% endif %}">
+                {{ b.StatusName or 'Pending' }}
+            </span>
+            <strong style="font-size:1rem;">&pound;{{ b.FinalPrice }}</strong>
+            <a href="{{ url_for('booking_receipt', booking_id=b.BookingID) }}"
+               class="btn btn-secondary btn-sm">Receipt</a>
+            {% if b.StatusName not in ['Cancelled','Refunded'] %}
+            <form method="POST"
+                  action="{{ url_for('cancel_booking', booking_id=b.BookingID) }}"
+                  onsubmit="return confirm('Cancel this booking? This cannot be undone.');">
+                <button type="submit" class="btn btn-danger btn-sm">Cancel</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <h3>No bookings yet</h3>
+    <p>You have not made any bookings. Browse events and book your first ticket.</p>
+    <a href="{{ url_for('events') }}" class="btn btn-primary">Browse events</a>
+</div>
+{% endif %}
+{% endblock %}

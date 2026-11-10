@@ -1,0 +1,38 @@
+<!-- Student: Ekaterina Inchakova | ID: 25028334 | Module: UFCFES-30-1 -->
+{% extends "base.html" %}
+{% block title %}Home | Bristol Community Events{% endblock %}
+
+{% block content %}
+<section class="hero-section">
+    <span class="eyebrow">Bristol Community Events</span>
+    <h1>Discover the best events<br>happening in Bristol</h1>
+    <p>Browse exhibitions, workshops, sports, music and community events across the city.
+       Book online, manage your bookings and explore Bristol in one place.</p>
+    <div class="hero-actions">
+        <a href="{{ url_for('events') }}" class="btn btn-primary btn-lg">Browse Events</a>
+        <a href="{{ url_for('register') }}" class="btn btn-secondary btn-lg">Create Account</a>
+    </div>
+</section>
+
+<div class="features-grid">
+    <div class="feature-card">
+        <h3>Easy Booking</h3>
+        <p>Book tickets in seconds and manage all your bookings in one place from any device.</p>
+    </div>
+    <div class="feature-card">
+        <h3>Student Discounts</h3>
+        <p>Students receive a 10% discount on all events. Simply register with your university email.</p>
+    </div>
+    <div class="feature-card">
+        <h3>Bristol Venues</h3>
+        <p>Events at iconic Bristol locations — from Ashton Gate to Arnolfini and beyond.</p>
+    </div>
+</div>
+
+<div class="why-card">
+    <h2>Why choose BCE?</h2>
+    <p>BCE gives Bristol residents and visitors a simple, modern way to discover local activities,
+       filter by category or date, and secure tickets with automatic advance-booking discounts.</p>
+    <a href="{{ url_for('events') }}" class="btn btn-primary">View all events</a>
+</div>
+{% endblock %}

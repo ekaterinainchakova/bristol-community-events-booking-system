@@ -1,0 +1,147 @@
+<!-- Student: Ekaterina Inchakova | ID: 25028334 | Module: UFCFES-30-1 -->
+{% extends "base.html" %}
+{% block title %}Admin – Messages | BCE{% endblock %}
+{% block content %}
+
+<div class="admin-page-header"><h2>Contact Messages</h2></div>
+
+<div class="admin-nav-tabs">
+    <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+    <a href="{{ url_for('admin_events') }}">Events</a>
+    <a href="{{ url_for('admin_bookings') }}">Bookings</a>
+    <a href="{{ url_for('admin_users') }}">Users</a>
+    <a href="{{ url_for('admin_venues') }}">Venues</a>
+    <a href="{{ url_for('admin_reports') }}">Reports</a>
+    <a href="{{ url_for('admin_messages') }}" class="active">Messages</a>
+</div>
+
+<div class="stats-row" style="grid-template-columns:repeat(3,1fr);margin-bottom:1.5rem;">
+    <div class="stat-card">
+        <div class="stat-label">Unread</div>
+        <div class="stat-value">{{ unread_count }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Total</div>
+        <div class="stat-value">{{ total_messages }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Replied</div>
+        <div class="stat-value">{{ replied_count }}</div>
+    </div>
+</div>
+
+<div style="display:flex;gap:0.5rem;margin-bottom:1.25rem;">
+    <button class="btn btn-primary btn-sm" onclick="filterMsg('all')" id="btn-all">All</button>
+    <button class="btn btn-secondary btn-sm" onclick="filterMsg('unread')" id="btn-unread">Unread</button>
+    <button class="btn btn-secondary btn-sm" onclick="filterMsg('replied')" id="btn-replied">Replied</button>
+</div>
+
+{% if messages %}
+<div id="msgList" style="display:flex;flex-direction:column;gap:1rem;">
+    {% for m in messages %}
+    <div class="card msg-item"
+         id="msg-{{ m.MessageID }}"
+         data-status="{% if not m.IsRead %}unread{% elif m.IsReplied %}replied{% else %}read{% endif %}"
+         style="{% if not m.IsRead %}border-left:4px solid var(--blue-mid);{% endif %}">
+
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;">
+            <div>
+                <strong>{{ m.FullName }}</strong>
+                <span style="color:var(--gray-400);font-size:0.875rem;margin-left:0.5rem;">{{ m.Email }}</span>
+                {% if not m.IsRead %}
+                    <span class="badge badge-blue" style="margin-left:0.5rem;">New</span>
+                {% endif %}
+                {% if m.IsReplied %}
+                    <span class="badge badge-green" style="margin-left:0.4rem;">Replied</span>
+                {% endif %}
+            </div>
+            <span style="color:var(--gray-400);font-size:0.8rem;white-space:nowrap;">{{ m.CreatedAt }}</span>
+        </div>
+
+        {% if m.Subject %}
+        <p style="margin-top:0.5rem;font-weight:600;color:var(--gray-800);">{{ m.Subject }}</p>
+        {% endif %}
+        <p style="margin-top:0.4rem;color:var(--gray-600);">{{ m.Message }}</p>
+
+        {% if m.AdminReply %}
+        <div style="margin-top:0.75rem;background:var(--gray-50);border:1px solid var(--gray-200);border-radius:var(--r-md);padding:0.75rem;">
+            <p style="font-size:0.78rem;font-weight:600;color:var(--gray-400);margin-bottom:0.3rem;">Admin reply &mdash; {{ m.RepliedAt }}</p>
+            <p style="font-size:0.875rem;">{{ m.AdminReply }}</p>
+        </div>
+        {% endif %}
+
+        <div style="display:flex;gap:0.5rem;margin-top:1rem;flex-wrap:wrap;">
+            {% if not m.IsRead %}
+            <button class="btn btn-secondary btn-sm"
+                    onclick="markRead({{ m.MessageID }})">Mark as read</button>
+            {% endif %}
+
+            {% if not m.IsReplied %}
+            <button class="btn btn-primary btn-sm"
+                    onclick="openReply({{ m.MessageID }})">Reply</button>
+            {% endif %}
+
+            <button class="btn btn-danger btn-sm"
+                    onclick="deleteMsg({{ m.MessageID }})">Delete</button>
+        </div>
+
+        
+        <div id="reply-box-{{ m.MessageID }}" style="display:none;margin-top:0.75rem;">
+            <textarea id="reply-text-{{ m.MessageID }}" rows="3"
+                      style="width:100%;padding:0.65rem 0.9rem;border:1.5px solid var(--gray-200);border-radius:var(--r-md);font-family:var(--font);font-size:0.9rem;resize:vertical;"
+                      placeholder="Type your reply..."></textarea>
+            <div style="display:flex;gap:0.5rem;margin-top:0.5rem;">
+                <button class="btn btn-primary btn-sm" onclick="sendReply({{ m.MessageID }})">Send reply</button>
+                <button class="btn btn-secondary btn-sm" onclick="document.getElementById('reply-box-{{ m.MessageID }}').style.display='none'">Cancel</button>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <h3>No messages yet</h3>
+    <p>Contact messages from visitors will appear here.</p>
+</div>
+{% endif %}
+
+<script>
+function filterMsg(type) {
+    document.querySelectorAll('.msg-item').forEach(function(el) {
+        const s = el.dataset.status;
+        if (type === 'all') el.style.display = '';
+        else if (type === 'unread') el.style.display = (s === 'unread') ? '' : 'none';
+        else if (type === 'replied') el.style.display = (s === 'replied') ? '' : 'none';
+    });
+    ['all','unread','replied'].forEach(function(t) {
+        const btn = document.getElementById('btn-' + t);
+        btn.className = (t === type) ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm';
+    });
+}
+
+function markRead(id) {
+    fetch('/admin/messages/' + id + '/read', { method: 'POST' })
+        .then(function() { location.reload(); });
+}
+
+function openReply(id) {
+    document.getElementById('reply-box-' + id).style.display = 'block';
+}
+
+function sendReply(id) {
+    const text = document.getElementById('reply-text-' + id).value.trim();
+    if (!text) { alert('Please enter a reply.'); return; }
+    fetch('/admin/messages/' + id + '/reply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reply: text })
+    }).then(function() { location.reload(); });
+}
+
+function deleteMsg(id) {
+    if (!confirm('Delete this message?')) return;
+    fetch('/admin/messages/' + id + '/delete', { method: 'DELETE' })
+        .then(function() { document.getElementById('msg-' + id).remove(); });
+}
+</script>
+{% endblock %}
